@@ -30,6 +30,8 @@
 
 ;; named-build
 
+(defvar emit-named-builder-suffix "-fn")
+
 (defmacro emit-named-build (name builder &rest args)
   "Alias NAME to the function produced by applying BUILDER to ARGS."
   `(defalias (quote ,name) (,builder ,@args)))
@@ -43,9 +45,9 @@
                  (cons (quote ,builder-name) args)))))
 
 (defmacro emit-named-builder (name)
-  "Create a naming builder macro NAME from (NAME + -fn)."
+  "Create a naming builder NAME from NAME with `emit-named-builder-suffix'."
   `(emit-build-named-builder
-    ,name ,(intern (concat (symbol-name name) "-fn"))))
+    ,name ,(intern (concat (symbol-name name) emit-named-builder-suffix))))
 
 ;; compose
 
