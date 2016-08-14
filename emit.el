@@ -39,10 +39,12 @@
 
 (defmacro emit-build-named-builder (name builder-name)
   "Create a macro NAME that invokes BUILDER-NAME with `emit-named-build'."
-  `(defmacro ,name (function-name &rest args)
-     (cons 'emit-named-build
-           (cons function-name
-                 (cons (quote ,builder-name) args)))))
+  `(progn
+       (defmacro ,name (function-name &rest args)
+         (cons 'emit-named-build
+               (cons function-name
+                     (cons (quote ,builder-name) args))))
+       (put (quote ,builder-name) 'lisp-indent-function 1)))
 
 (defmacro emit-named-builder (name)
   "Create a naming builder NAME from NAME with `emit-named-builder-suffix'."
