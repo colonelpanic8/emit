@@ -117,5 +117,21 @@
 
 (emit-named-builder emit-prefix-selector)
 
+;; let-around
+
+(defmacro emit-let-around-fn (orig-func &rest forms)
+  "Build a lambda that calls ORIG-FUNC with the bindings in FORMS set."
+  (let* ((orig-interactive-form (interactive-form orig-func))
+         (docstring-form (format "Call `%s' with bindings: %s." orig-func forms))
+         (additional-forms (list docstring-form)))
+    (when orig-interactive-form
+      (nconc additional-forms (list orig-interactive-form)))
+    `(lambda (&rest args)
+       ,@additional-forms
+       (let ,forms
+         (apply (quote ,orig-func) args)))))
+
+(emit-named-builder emit-let-around)
+
 (provide 'emit)
 ;;; emit.el ends here
