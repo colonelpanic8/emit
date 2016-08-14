@@ -51,6 +51,10 @@
 
 ;; compose
 
+;; This implementation of compose may seem quite complicated, but it
+;; has the advantage that it works with macros it performs quite well
+;; because it results in only one additional stack frame.
+
 (defun emit-help-function-arglist (fn)
   (let ((result (help-function-arglist fn)))
     (if (eq result t) '(&rest args) result)))
@@ -76,7 +80,6 @@
      (emit-compose-helper ,funcs ,call-arguments)))
 
 (defmacro emit-compose-helper (funcs arguments)
-  "Builds funcalls of FUNCS eventually applied to ARGUMENTS."
   (if (equal (length funcs) 1)
       (let ((last-function (car funcs)))
         ;; This hideous clause is here because it is the only way to
