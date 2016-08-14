@@ -23,12 +23,12 @@
 
 ;;; Commentary:
 
-;; This package provides functions that are generally useful for configuring
-;; Emacs.
+;; This package provides functions that are generally useful for
+;; configuring Emacs.
 
 ;;; Code:
 
-;; named-build
+;; named-builder
 
 (defvar emit-named-builder-suffix "-fn")
 
