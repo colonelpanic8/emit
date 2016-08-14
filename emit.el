@@ -89,5 +89,28 @@
 
 (emit-named-builder emit-compose)
 
+;; prefix-selector
+
+(defmacro emit-prefix-selector-fn (&rest functions)
+  "Build a lambda to dispatch to FUNCTIONS based on the prefix argument."
+  (let* ((exponent 0)
+         (conditions
+          (cl-loop for fn in functions
+                   collect `((or (equal arg (quote ,(list (expt 4 exponent))))
+                                 (equal arg ,exponent))
+                             (quote ,fn))
+                   do (incf exponent))))
+    `(lambda (arg)
+       (interactive "P")
+       (let ((selection
+              (cond ,@conditions)))
+         (unless selection
+           ;; Set a default value for function
+           (setq selection (quote ,(car functions))))
+         (setq current-prefix-arg nil)
+         (call-interactively selection)))))
+
+(emit-named-builder emit-prefix-selector)
+
 (provide 'emit)
 ;;; emit.el ends here
