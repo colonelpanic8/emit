@@ -47,13 +47,14 @@
   `(emit-build-named-builder
     ,name ,(intern (concat (symbol-name name) "-fn"))))
 
+;; compose
+
 (defun emit-help-function-arglist (fn)
   (let ((result (help-function-arglist fn)))
     (if (eq result t) '(&rest args) result)))
 
-;; compose
-
 (defmacro emit-compose-fn (&rest funcs)
+  "Build a new lambda function that is the composition of FUNCS."
   (let* ((last-function (car (last funcs)))
          (arguments (emit-help-function-arglist last-function))
          (call-arguments (delq '&optional arguments)))
