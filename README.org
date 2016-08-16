@@ -45,7 +45,7 @@ Call `multi-line' by default."
        (call-interactively selection)))))
 #+END_SRC
 ** Named Builder
-~emit-named-builder-builder~ is a macro that operates on existing macros that produce an anonymous lambda functions. It produces a new macro with the name provided as its first argument that has identical behavior to the macro passed as its second argument, except that it takes an additional argument before all the other arguments that will be the alias for the new function.
+~emit-named-builder-builder~ is a macro that operates on existing macros that produce anonymous lambda functions. It produces a new macro whose name is given by the first argument to ~emit-named-builder-builder~ which has identical behavior to the macro passed as its second argument, except that the new macro takes an additional argument before all the other arguments that will be the alias for the new function it produces.
 
 ~emit-named-builder~ is a convenience macro that only takes the name of the new macro, with the assumption that the anonymous function from which to build the naming macro has the same name with the suffix in ~emit-named-builder-suffix~.
 *** Example
