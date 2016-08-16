@@ -65,7 +65,7 @@
   "Build a new lambda function that is the composition of FUNCS."
   (let* ((last-function (car (last funcs)))
          (arguments (emit-help-function-arglist last-function))
-         (call-arguments (delq '&optional arguments)))
+         (call-arguments (remq '&optional arguments)))
     ;; When we have an &rest arguments there is no point in taking any
     ;; of the arguments by name, so we simply pass them all as an
     ;; argument list. See the comment below to understand how this
