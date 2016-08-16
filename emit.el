@@ -77,9 +77,12 @@
 
 (defmacro emit-compose-argspec (arguments call-arguments &rest funcs)
   "Build a lambda with CALL-ARGUMENTS passed as ARGUMENTS that composes FUNCS."
-  `(lambda ,arguments
-     ,(format "The composition of %s" funcs)
-     (emit-compose-helper ,funcs ,call-arguments)))
+  (let ((interactive-form (when (and funcs (listp funcs))
+                             (interactive-form (car (last funcs))))))
+    `(lambda ,arguments
+       ,(format "The composition of %s" funcs)
+       ,@(when interactive-form (list interactive-form))
+       (emit-compose-helper ,funcs ,call-arguments))))
 
 (defmacro emit-compose-helper (funcs arguments)
   (if (equal (length funcs) 1)
