@@ -115,7 +115,7 @@
   (let* ((selector-number 0)
          (conditions
           (cl-loop for fn in functions
-                   collect (list selector-number fn)
+                   collect `(selector-number (quote ,fn))
                    do (cl-incf selector-number))))
     `(lambda (arg)
        ,(format "Call one of %s depending the prefix argument.\nCall `%s' by default."
