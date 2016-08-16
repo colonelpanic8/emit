@@ -67,6 +67,15 @@ expands to:
                          (cons 'emit-prefix-selector-fn args)))))))
   (put 'emit-prefix-selector-fn 'lisp-indent-function 1))
 #+END_SRC
+
+which is also the expansion of:
+
+#+BEGIN_SRC emacs-lisp
+(progn
+  (defmacro emit-prefix-selector (function-name &rest args)
+    `(emit-named-build ,function-name emit-prefix-selector-fn ,@args))
+  (put 'emit-prefix-selector-fn 'lisp-indent-function 1))
+#+END_SRC
 ** Compose
 
 ~emit-compose~ (and its anonymous form ~emit-compose-fn~) compose functions OR macros in the most syntactically simple way possible. In most cases this results in very obvious expantions.
