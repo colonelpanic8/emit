@@ -103,11 +103,11 @@
 
 ;; prefix-selector
 
-(defun emit-interpret-prefix-as-number (prefix-arg)
+(defun emit-interpret-prefix-as-number (prefix)
   (cond
-   ((numberp prefix-arg) prefix-arg)
-   ((and (-non-nil prefix-arg) (listp prefix-arg))
-    (truncate (log (car prefix-arg) 4)))
+   ((numberp prefix) prefix)
+   ((and (-non-nil prefix) (listp prefix))
+    (truncate (log (car prefix) 4)))
    (0)))
 
 (defmacro emit-prefix-selector-fn (&rest functions)
