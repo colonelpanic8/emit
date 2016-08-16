@@ -1,5 +1,5 @@
 * emit
-emit (*EM* acs *I* nit *T* ools) is a collection of functions and macros that are generally useful for the configuration of emacs.
+emit (*EM*\acs *I*\nit *T*\ools) is a collection of functions and macros that are generally useful for the configuration of emacs.
 * Installation
 
 Install from MELPA (coming soon) with ~M-x package-install emit~. See the [[https://github.com/milkypostman/melpa][melpa repository]] for details about how to set up MELPA if you have not already done so.
