@@ -1,0 +1,153 @@
+* emit
+emit (*EM* acs *I* nit *T* ools) is a collection of functions and macros that are generally useful for the configuration of emacs.
+* Installation
+
+Install from MELPA (coming soon) with ~M-x package-install emit~. See the [[https://github.com/milkypostman/melpa][melpa repository]] for details about how to set up MELPA if you have not already done so.
+* Explanation/Examples
+** Prefix Selector
+~emit-prefix-selector~ produces an interactive function which will dispatch calls to other interactive functions based on the value of the prefix argument. Invoked normally the function built by ~emit-prefix-selector~ will call the first function that was provided, with one ~universal-argument~ keypress it will call the second function, with two the third, and so on.
+*** Example
+#+BEGIN_SRC emacs-lisp
+(emit-prefix-selector imalison:multi-line
+  multi-line
+  multi-line-single-line
+  imalison:multi-line-skip-fill
+  imalison:multi-line-fill
+  imalison:multi-line-fill-column)
+#+END_SRC
+expands to:
+#+BEGIN_SRC emacs-lisp
+(defalias 'imalison:multi-line
+  (function
+   (lambda
+     (arg)
+     "Call one of `multi-line', `multi-line-single-line', `imalison:multi-line-skip-fill', `imalison:multi-line-fill', `imalison:multi-line-fill-column' depending the prefix argument.
+Call `multi-line' by default."
+     (interactive "P")
+     (setq arg
+           (emit-interpret-prefix-as-number arg))
+     (let
+         ((selection
+           (or
+            (cond
+             ((equal arg 0)
+              'multi-line)
+             ((equal arg 1)
+              'multi-line-single-line)
+             ((equal arg 2)
+              'imalison:multi-line-skip-fill)
+             ((equal arg 3)
+              'imalison:multi-line-fill)
+             ((equal arg 4)
+              'imalison:multi-line-fill-column)
+             ('multi-line)))))
+       (setq current-prefix-arg nil)
+       (call-interactively selection)))))
+#+END_SRC
+** Named Builder
+~emit-named-builder-builder~ is a macro that operates on existing macros that produce an anonymous lambda functions. It produces a new macro with the name provided as its first argument that has identical behavior to the macro passed as its second argument, except that it takes an additional argument before all the other arguments that will be the alias for the new function.
+
+~emit-named-builder~ is a convenience macro that only takes the name of the new macro, with the assumption that the anonymous function from which to build the naming macro has the same name with the suffix in ~emit-named-builder-suffix~.
+*** Example
+This call
+#+BEGIN_SRC emacs-lisp
+(emit-named-builder emit-prefix-selector)
+#+END_SRC
+
+expands to:
+#+BEGIN_SRC emacs-lisp
+(progn
+  (defalias 'emit-prefix-selector
+    (cons 'macro
+          (function
+           (lambda
+             (function-name &rest args)
+             (cons 'emit-named-build
+                   (cons function-name
+                         (cons 'emit-prefix-selector-fn args)))))))
+  (put 'emit-prefix-selector-fn 'lisp-indent-function 1))
+#+END_SRC
+** Compose
+
+~emit-compose~ (and its anonymous form ~emit-compose-fn~) compose functions OR macros in the most syntactically simple way possible. In most cases this results in very obvious expantions.
+
+The following compose invocation:
+
+#+BEGIN_SRC emacs-lisp
+(emit-compose-fn intern car car)
+#+END_SRC
+
+expands much as you would expect:
+
+#+BEGIN_SRC emacs-lisp
+(function
+ (lambda
+   (arg1)
+   "The composition of (intern car car)"
+   (intern
+    (car
+     (car arg1)))))
+#+END_SRC
+
+the newly produced lambda will usually directly inherit the signature of the function deepest in the composition. As an example:
+
+#+BEGIN_SRC emacs-lisp
+(defun add-one (an-arg &optional unused-arg)
+  (+ 1 an-arg))
+
+(emit-compose-fn - add-one)
+#+END_SRC
+
+expands to:
+
+#+BEGIN_SRC emacs-lisp
+(function
+ (lambda
+   (an-arg &optional unused-arg)
+   "The composition of (- add-one)"
+   (-
+    (add-one an-arg unused-arg))))
+#+END_SRC
+
+When the last function in the composition takes variadic arguments, this DOES NOT happen:
+
+#+BEGIN_SRC emacs-lisp
+(emit-compose add-and-make-negative - +)
+#+END_SRC
+
+expands to:
+
+#+BEGIN_SRC emacs-lisp
+(defalias 'add-and-make-negative
+  (function
+   (lambda
+     (&rest args)
+     "The composition of (- +)"
+     (-
+      (#[128 "\302\300\303\301\"\"\207"
+             [apply
+              (+)
+              apply append]
+             6 "
+
+(fn &rest ARGS2)"]
+       args)))))
+#+END_SRC
+
+The hideous mess that you see after the call to ~-~ is a partial application of apply to ~+~ which allows the argument list that comes in as args to be interpreted appropriately as an argument list.
+
+~emit-compose~ will inherit the interactive form of the first function called in the composition. See that:
+#+BEGIN_SRC emacs-lisp
+(emit-compose version-as-list list version)
+#+END_SRC
+expands to:
+#+BEGIN_SRC emacs-lisp
+(defalias 'version-as-list
+  (function
+   (lambda
+     (&optional here)
+     "The composition of (list version)"
+     (interactive "P")
+     (list
+      (version here)))))
+#+END_SRC
