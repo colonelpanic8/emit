@@ -18,31 +18,24 @@ Install from MELPA (coming soon) with ~M-x package-install emit~. See the [[http
 expands to:
 #+BEGIN_SRC emacs-lisp
 (defalias 'imalison:multi-line
-  (function
-   (lambda
-     (arg)
-     "Call one of `multi-line', `multi-line-single-line', `imalison:multi-line-skip-fill', `imalison:multi-line-fill', `imalison:multi-line-fill-column' depending the prefix argument.
+  (lambda
+    (arg)
+    "Call one of `multi-line', `multi-line-single-line', `imalison:multi-line-skip-fill', `imalison:multi-line-fill', `imalison:multi-line-fill-column' depending the prefix argument.
 Call `multi-line' by default."
-     (interactive "P")
-     (setq arg
-           (emit-interpret-prefix-as-number arg))
-     (let
-         ((selection
-           (or
-            (cond
-             ((equal arg 0)
-              'multi-line)
-             ((equal arg 1)
-              'multi-line-single-line)
-             ((equal arg 2)
-              'imalison:multi-line-skip-fill)
-             ((equal arg 3)
-              'imalison:multi-line-fill)
-             ((equal arg 4)
-              'imalison:multi-line-fill-column)
-             ('multi-line)))))
-       (setq current-prefix-arg nil)
-       (call-interactively selection)))))
+    (interactive "P")
+    (setq arg
+          (emit-interpret-prefix-as-number arg))
+    (let
+        ((selection
+          (pcase arg
+            (0 multi-line)
+            (1 multi-line-single-line)
+            (2 imalison:multi-line-skip-fill)
+            (3 imalison:multi-line-fill)
+            (4 imalison:multi-line-fill-column)
+            (_ 'multi-line))))
+      (setq current-prefix-arg nil)
+      (call-interactively selection))))
 #+END_SRC
 ** Named Builder
 ~emit-named-builder-builder~ is a macro that operates on existing macros that produce anonymous lambda functions. It produces a new macro whose name is given by the first argument to ~emit-named-builder-builder~ which has identical behavior to the macro passed as its second argument, except that the new macro takes an additional argument before all the other arguments that will be the alias for the new function it produces.

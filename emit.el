@@ -111,7 +111,7 @@
   (let* ((selector-number 0)
          (conditions
           (cl-loop for fn in functions
-                   collect `((equal arg ,selector-number) (quote ,fn))
+                   collect (list selector-number fn)
                    do (incf selector-number))))
     `(lambda (arg)
        ,(format "Call one of %s depending the prefix argument.\nCall `%s' by default."
@@ -123,7 +123,7 @@
                            functions ", ") (car functions))
        (interactive "P")
        (setq arg (emit-interpret-prefix-as-number arg))
-       (let ((selection (or (cond ,@conditions ((quote ,(car functions)))))))
+       (let ((selection (pcase arg ,@conditions (_ (quote ,(car functions))))))
          (setq current-prefix-arg nil)
          (call-interactively selection)))))
 
