@@ -6,7 +6,7 @@
 ;; Keywords: init utility general library
 ;; URL: https://github.com/IvanMalison/emit
 ;; Version: 0.0.0
-;; Package-Requires: ((dash "2.10.0") (emacs "24"))
+;; Package-Requires: ((dash "2.10.0") (emacs "24") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -28,9 +28,13 @@
 
 ;;; Code:
 
+(require 'dash)
+(require 'cl-lib)
+
 ;; named-builder
 
-(defvar emit-named-builder-suffix "-fn")
+(eval-and-compile
+  (defvar emit-named-builder-suffix "-fn"))
 
 (defmacro emit-named-build (name builder &rest args)
   "Alias NAME to the function produced by applying BUILDER to ARGS."
@@ -99,11 +103,11 @@
 
 ;; prefix-selector
 
-(defun emit-interpret-prefix-as-number (prefix-arg)
+(defun emit-interpret-prefix-as-number (prefix)
   (cond
-   ((numberp prefix-arg) prefix-arg)
-   ((and (-non-nil prefix-arg) (listp prefix-arg))
-    (truncate (log (car prefix-arg) 4)))
+   ((numberp prefix) prefix)
+   ((and (-non-nil prefix) (listp prefix))
+    (truncate (log (car prefix) 4)))
    (0)))
 
 (defmacro emit-prefix-selector-fn (&rest functions)
@@ -112,7 +116,7 @@
          (conditions
           (cl-loop for fn in functions
                    collect (list selector-number fn)
-                   do (incf selector-number))))
+                   do (cl-incf selector-number))))
     `(lambda (arg)
        ,(format "Call one of %s depending the prefix argument.\nCall `%s' by default."
                 (mapconcat (lambda (fn-or-symbol)
