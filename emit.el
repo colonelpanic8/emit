@@ -99,22 +99,31 @@
 
 ;; prefix-selector
 
+(defun emit-interpret-prefix-as-number (prefix-arg)
+  (cond
+   ((numberp prefix-arg) prefix-arg)
+   ((and (-non-nil prefix-arg) (listp prefix-arg))
+    (truncate (log (car prefix-arg) 4)))
+   (0)))
+
 (defmacro emit-prefix-selector-fn (&rest functions)
   "Build a lambda to dispatch to FUNCTIONS based on the prefix argument."
-  (let* ((exponent 0)
+  (let* ((selector-number 0)
          (conditions
           (cl-loop for fn in functions
-                   collect `((or (equal arg (quote ,(list (expt 4 exponent))))
-                                 (equal arg ,exponent))
-                             (quote ,fn))
-                   do (incf exponent))))
+                   collect `((equal arg ,selector-number) (quote ,fn))
+                   do (incf selector-number))))
     `(lambda (arg)
+       ,(format "Call one of %s depending the prefix argument.\nCall `%s' by default."
+                (mapconcat (lambda (fn-or-symbol)
+                                  (cond
+                                   ((symbolp fn-or-symbol)
+                                    (format "`%s'" (symbol-name fn-or-symbol)))
+                                   ((format "%s" fn-or-symbol))))
+                           functions ", ") (car functions))
        (interactive "P")
-       (let ((selection
-              (cond ,@conditions)))
-         (unless selection
-           ;; Set a default value for function
-           (setq selection (quote ,(car functions))))
+       (setq arg (emit-interpret-prefix-as-number arg))
+       (let ((selection (or (cond ,@conditions ((quote ,(car functions)))))))
          (setq current-prefix-arg nil)
          (call-interactively selection)))))
 
