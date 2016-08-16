@@ -30,7 +30,8 @@
 
 ;; named-builder
 
-(defvar emit-named-builder-suffix "-fn")
+(eval-and-compile
+  (defvar emit-named-builder-suffix "-fn"))
 
 (defmacro emit-named-build (name builder &rest args)
   "Alias NAME to the function produced by applying BUILDER to ARGS."
