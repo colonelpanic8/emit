@@ -6,7 +6,7 @@
 ;; Keywords: init utility general library
 ;; URL: https://github.com/IvanMalison/emit
 ;; Version: 0.0.0
-;; Package-Requires: ((dash "2.10.0") (emacs "24"))
+;; Package-Requires: ((dash "2.10.0") (emacs "24") (cl-lib "0.5"))
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -27,6 +27,9 @@
 ;; configuring Emacs.
 
 ;;; Code:
+
+(require 'dash)
+(require 'cl-lib)
 
 ;; named-builder
 
@@ -113,7 +116,7 @@
          (conditions
           (cl-loop for fn in functions
                    collect (list selector-number fn)
-                   do (incf selector-number))))
+                   do (cl-incf selector-number))))
     `(lambda (arg)
        ,(format "Call one of %s depending the prefix argument.\nCall `%s' by default."
                 (mapconcat (lambda (fn-or-symbol)
