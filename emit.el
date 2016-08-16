@@ -136,10 +136,9 @@
   (let* ((orig-interactive-form (interactive-form orig-func))
          (docstring-form (format "Call `%s' with bindings: %s." orig-func forms))
          (additional-forms (list docstring-form)))
-    (when orig-interactive-form
-      (nconc additional-forms (list orig-interactive-form)))
     `(lambda (&rest args)
        ,@additional-forms
+       ,@(when orig-interactive-form (list orig-interactive-form))
        (let ,forms
          (apply (quote ,orig-func) args)))))
 
