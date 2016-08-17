@@ -3,7 +3,7 @@
 ;; Copyright (C) 2016 Ivan Malison
 
 ;; Author: Ivan Malison <IvanMalison@gmail.com>
-;; Keywords: init utility general library
+;; Keywords: init utility general library macro
 ;; URL: https://github.com/IvanMalison/emit
 ;; Version: 0.0.0
 ;; Package-Requires: ((dash "2.10.0") (emacs "24") (cl-lib "0.5"))
