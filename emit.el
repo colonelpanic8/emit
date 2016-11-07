@@ -31,6 +31,7 @@
 (require 'dash)
 (require 'cl-lib)
 
+
 ;; named-builder
 
 (eval-and-compile
@@ -54,7 +55,7 @@
   "Create a naming builder NAME from NAME with `emit-named-builder-suffix'."
   `(emit-build-named-builder
     ,name ,(intern (concat (symbol-name name) emit-named-builder-suffix))))
-
+
 ;; compose
 
 ;; This implementation of compose may seem quite complicated, but it
@@ -100,7 +101,7 @@
       (emit-compose-helper ,(cdr funcs) ,arguments))))
 
 (emit-named-builder emit-compose)
-
+
 ;; prefix-selector
 
 (defun emit-interpret-prefix-as-number (prefix)
@@ -132,7 +133,7 @@
          (call-interactively selection)))))
 
 (emit-named-builder emit-prefix-selector)
-
+
 ;; let-around
 
 (defmacro emit-let-around-fn (orig-func &rest forms)
@@ -147,6 +148,7 @@
          (apply (quote ,orig-func) args)))))
 
 (emit-named-builder emit-let-around)
+
 
 (provide 'emit)
 ;;; emit.el ends here
