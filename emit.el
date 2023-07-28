@@ -104,6 +104,8 @@
       (emit-compose-helper ,(cdr funcs) ,arguments))))
 
 (emit-named-builder emit-compose)
+
+(put 'emit-compose 'lisp-indent-function 'defun)
 
 ;; prefix-selector
 
@@ -136,6 +138,8 @@
          (call-interactively selection)))))
 
 (emit-named-builder emit-prefix-selector)
+
+(put 'emit-prefix-selector 'lisp-indent-function 'defun)
 
 ;; let-around
 
