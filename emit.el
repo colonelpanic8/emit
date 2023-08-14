@@ -1,6 +1,6 @@
 ;;; emit.el --- Tools for configuration -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2016 Ivan Malison
+;; Copyright (C) 2016-2023 Ivan Malison
 
 ;; Author: Ivan Malison <IvanMalison@gmail.com>
 ;; Keywords: init utility general library macro
@@ -144,7 +144,7 @@
 ;; let-around
 
 (defmacro emit-let-around-fn (orig-func &rest forms)
-  "Build a lambda that calls ORIG-FUNC with the bindings in FORMS set."
+  "Build a lambda that will call ORIG-FUNC with the bindings in FORMS set."
   (let* ((orig-interactive-form (interactive-form orig-func))
          (docstring-form (format "Call `%s' with bindings: %s." orig-func forms))
          (additional-forms (list docstring-form)))
@@ -156,6 +156,58 @@
 
 (emit-named-builder emit-let-around)
 
+;; Minor mode utilities
+
+(defmacro emit-variable-set-mode (mode-name variable value)
+  "Define a minor mode to set a global variable's value when enabled.
+
+MODE-NAME is the name of the mode.
+VARIABLE is the global variable to be toggled.
+VALUE is the value to be set when the mode is activated."
+  (let ((original-value
+         (make-symbol (concat (symbol-name mode-name) "-original-" (symbol-name variable))))
+        (mode-value (make-symbol (concat (symbol-name mode-name) "-value")))
+        (mode-enable (make-symbol (concat (symbol-name mode-name) "-enable")))
+        (mode-disable (make-symbol (concat (symbol-name mode-name) "-disable"))))
+    `(progn
+       (defvar ,original-value nil
+         ,(concat "Storage for the original value of `" (symbol-name variable)
+                 "' before `" (symbol-name mode-name) "' was activated."))
+       (defvar ,mode-value ,value
+         ,(concat "The value to set `" (symbol-name variable)
+                 "' to when `" (symbol-name mode-name) "' is active."))
+
+       (defun ,mode-enable ()
+         (unless ,original-value
+           (setq ,original-value ,variable))
+         (setq ,variable ,mode-value))
+
+       (defun ,mode-disable ()
+         (if (eq ,variable ,mode-value)
+             (setq ,variable ,original-value)
+           (message "Unexpected value for %s when disabling %s " ',variable ',mode-name))
+         (setq ,original-value nil))
+
+       (define-minor-mode ,mode-name
+         ,(concat "A minor mode to toggle the value of `" (symbol-name variable) "'.")
+         :lighter (concat " " (symbol-name mode-name))
+         :global t
+         :init-value nil
+         (if ,mode-name
+             (,mode-enable)
+           (,mode-disable))))))
+
+(defmacro emit-make-mode-dependent (dependent-mode trigger-mode)
+  "Make DEPENDENT-MODE activate or deactivate based on the state of TRIGGER-MODE."
+  `(progn
+     ;; When TRIGGER-MODE is activated, activate DEPENDENT-MODE
+     (add-hook (quote ,(intern (concat (symbol-name trigger-mode) "-hook")))
+               (lambda ()
+                 (if ,trigger-mode
+                     (unless ,dependent-mode
+                       (,dependent-mode 1))
+                   (when ,dependent-mode
+                     (,dependent-mode -1)))))))
 
 (provide 'emit)
 ;;; emit.el ends here
