@@ -158,24 +158,28 @@
 
 ;; Minor mode utilities
 
-(defmacro emit-variable-set-mode (mode-name variable value)
+(defmacro emit-variable-set-mode (set-mode-name variable value)
   "Define a minor mode to set a global variable's value when enabled.
 
-MODE-NAME is the name of the mode.
+SET-MODE-NAME is the name of the mode.
 VARIABLE is the global variable to be toggled.
 VALUE is the value to be set when the mode is activated."
   (let ((original-value
-         (make-symbol (concat (symbol-name mode-name) "-original-" (symbol-name variable))))
-        (mode-value (make-symbol (concat (symbol-name mode-name) "-value")))
-        (mode-enable (make-symbol (concat (symbol-name mode-name) "-enable")))
-        (mode-disable (make-symbol (concat (symbol-name mode-name) "-disable"))))
+         (make-symbol (concat (symbol-name set-mode-name) "-original-"
+                              (symbol-name variable))))
+        (mode-value
+         (make-symbol (concat (symbol-name set-mode-name) "-value")))
+        (mode-enable
+         (make-symbol (concat (symbol-name set-mode-name) "-enable")))
+        (mode-disable
+         (make-symbol (concat (symbol-name set-mode-name) "-disable"))))
     `(progn
        (defvar ,original-value nil
          ,(concat "Storage for the original value of `" (symbol-name variable)
-                 "' before `" (symbol-name mode-name) "' was activated."))
+                 "' before `" (symbol-name set-mode-name) "' was activated."))
        (defvar ,mode-value ,value
          ,(concat "The value to set `" (symbol-name variable)
-                 "' to when `" (symbol-name mode-name) "' is active."))
+                 "' to when `" (symbol-name set-mode-name) "' is active."))
 
        (defun ,mode-enable ()
          (unless ,original-value
@@ -185,21 +189,23 @@ VALUE is the value to be set when the mode is activated."
        (defun ,mode-disable ()
          (if (eq ,variable ,mode-value)
              (setq ,variable ,original-value)
-           (message "Unexpected value for %s when disabling %s " ',variable ',mode-name))
+           (message "Unexpected value for %s when disabling %s " ',variable ',set-mode-name))
          (setq ,original-value nil))
 
-       (define-minor-mode ,mode-name
+       (define-minor-mode ,set-mode-name
          ,(concat "A minor mode to toggle the value of `" (symbol-name variable) "'.")
-         :lighter (concat " " (symbol-name mode-name))
+         :lighter (concat " " (symbol-name set-mode-name))
          :global t
          :init-value nil
-         (if ,mode-name
+         (if ,set-mode-name
              (,mode-enable)
            (,mode-disable))))))
 
 (defmacro emit-make-mode-dependent (dependent-mode trigger-mode)
   "Make DEPENDENT-MODE activate or deactivate based on the state of TRIGGER-MODE."
-  (let ((sync-fn-name (intern (concat "emit-sync-" (symbol-name dependent-mode) "-with-" (symbol-name trigger-mode)))))
+  (let ((sync-fn-name
+         (intern (concat "emit-sync-" (symbol-name dependent-mode) "-with-"
+                         (symbol-name trigger-mode)))))
     `(progn
        (defun ,sync-fn-name ()
          (if ,trigger-mode
@@ -209,7 +215,9 @@ VALUE is the value to be set when the mode is activated."
              (,dependent-mode -1))))
 
        ;; Add the synchronization function to TRIGGER-MODE's hook.
-       (add-hook (quote ,(intern (concat (symbol-name trigger-mode) "-hook"))) ',sync-fn-name)
+       (add-hook
+        (quote
+         ,(intern (concat (symbol-name trigger-mode) "-hook"))) ',sync-fn-name)
 
        ;; Call the synchronization function once to align the modes right away.
        (,sync-fn-name))))
