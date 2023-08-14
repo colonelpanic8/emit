@@ -199,15 +199,20 @@ VALUE is the value to be set when the mode is activated."
 
 (defmacro emit-make-mode-dependent (dependent-mode trigger-mode)
   "Make DEPENDENT-MODE activate or deactivate based on the state of TRIGGER-MODE."
-  `(progn
-     ;; When TRIGGER-MODE is activated, activate DEPENDENT-MODE
-     (add-hook (quote ,(intern (concat (symbol-name trigger-mode) "-hook")))
-               (lambda ()
-                 (if ,trigger-mode
-                     (unless ,dependent-mode
-                       (,dependent-mode 1))
-                   (when ,dependent-mode
-                     (,dependent-mode -1)))))))
+  (let ((sync-fn-name (intern (concat "emit-sync-" (symbol-name dependent-mode) "-with-" (symbol-name trigger-mode)))))
+    `(progn
+       (defun ,sync-fn-name ()
+         (if ,trigger-mode
+             (unless ,dependent-mode
+               (,dependent-mode 1))
+           (when ,dependent-mode
+             (,dependent-mode -1))))
+
+       ;; Add the synchronization function to TRIGGER-MODE's hook.
+       (add-hook (quote ,(intern (concat (symbol-name trigger-mode) "-hook"))) ',sync-fn-name)
+
+       ;; Call the synchronization function once to align the modes right away.
+       (,sync-fn-name))))
 
 (provide 'emit)
 ;;; emit.el ends here
